@@ -8,12 +8,13 @@
 <body>
 <div class="container mt-4">
     <h1>Liste des artistes</h1>
+    <a href="{% url 'artist_create' %}" class="btn btn-success mb-3">+ Nouvel artiste</a>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Prénom</th>
                 <th>Nom</th>
-                <th>Détail</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -21,7 +22,14 @@
             <tr>
                 <td>{{ artist.firstname }}</td>
                 <td>{{ artist.lastname }}</td>
-                <td><a href="{% url 'artist_show' artist.id %}">Voir</a></td>
+                <td>
+                    <a href="{% url 'artist_show' artist.id %}" class="btn btn-sm btn-info">Voir</a>
+                    <a href="{% url 'artist_edit' artist.id %}" class="btn btn-sm btn-warning">Modifier</a>
+                    <form method="post" action="{% url 'artist_delete' artist.id %}" style="display:inline;" onsubmit="return confirm('Supprimer cet artiste ?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
