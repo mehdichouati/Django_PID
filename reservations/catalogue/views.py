@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Artist
-from .forms import ArtistForm
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .models import Artist, Role, RoleUser, UserMeta
+from .forms import ArtistForm, RegisterForm
 
 
 def artist_index(request):
@@ -45,3 +47,24 @@ def artist_delete(request, id):
     artist = get_object_or_404(Artist, id=id)
     artist.delete()
     return redirect('artist_index')
+
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                username=form.cleaned_data['login'],
+                password=form.cleaned_data['password'],
+                first_name=form.cleaned_data['firstname'],
+                last_name=form.cleaned_data['lastname'],
+                email=form.cleaned_data['email'],
+            )
+            UserMeta.objects.create(user=user, langue=form.cleaned_data['langue'])
+            member_role = Role.objects.get(role='member')
+            RoleUser.objects.create(user=user, role=member_role)
+            messages.success(request, "Inscription réussie ! Vous pouvez maintenant vous connecter.")
+            return redirect('login')
+    else:
+        form = RegisterForm()
+    return render(request, 'catalogue/register.html', {'form': form})
