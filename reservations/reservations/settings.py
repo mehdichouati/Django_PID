@@ -130,3 +130,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'artist_index'
 LOGOUT_REDIRECT_URL = 'artist_index'
 LOGIN_URL = 'login'
+
+# Email (mode développement : les emails s'affichent dans le terminal)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
