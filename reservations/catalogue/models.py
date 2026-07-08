@@ -61,3 +61,29 @@ class ArtisteType(models.Model):
 
     def __str__(self):
         return f"{self.artist} - {self.type}"
+
+
+class Locality(models.Model):
+    postal_code = models.CharField(max_length=6, unique=True)
+    locality = models.CharField(max_length=60, unique=True)
+
+    class Meta:
+        db_table = 'localities'
+
+    def __str__(self):
+        return f"{self.postal_code} {self.locality}"
+
+
+class Location(models.Model):
+    locality = models.ForeignKey(Locality, on_delete=models.SET_NULL, null=True, blank=True, db_column='locality_id')
+    slug = models.SlugField(max_length=60, unique=True)
+    designation = models.CharField(max_length=60)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    website = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=30, blank=True, null=True)
+
+    class Meta:
+        db_table = 'locations'
+
+    def __str__(self):
+        return self.designation
