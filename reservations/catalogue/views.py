@@ -66,6 +66,19 @@ def artist_add_type(request, id):
     return redirect('artist_show', id=artist.id)
 
 
+def artist_create_type(request, id):
+    artist = get_object_or_404(Artist, id=id)
+    if request.method == 'POST':
+        type_name = request.POST.get('type_name', '').strip()
+        if type_name:
+            type_obj, created = Type.objects.get_or_create(type=type_name)
+            ArtisteType.objects.get_or_create(artist=artist, type=type_obj)
+            messages.success(request, f"Nouveau type '{type_name}' créé et ajouté à {artist}.")
+        else:
+            messages.error(request, "Le nom du type ne peut pas être vide.")
+    return redirect('artist_show', id=artist.id)
+
+
 def artist_remove_type(request, id, type_id):
     artist_type = get_object_or_404(ArtisteType, artist_id=id, type_id=type_id)
     artist_type.delete()

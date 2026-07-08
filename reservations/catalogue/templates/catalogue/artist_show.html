@@ -21,7 +21,7 @@
 
 {% if available_types %}
 <h4>Ajouter un type existant</h4>
-<form method="post" action="{% url 'artist_add_type' artist.id %}" class="d-flex gap-2" style="max-width: 400px;">
+<form method="post" action="{% url 'artist_add_type' artist.id %}" class="d-flex gap-2 mb-4" style="max-width: 400px;">
     {% csrf_token %}
     <select name="type_id" class="form-select">
         {% for type in available_types %}
@@ -31,4 +31,11 @@
     <button type="submit" class="btn btn-success">Ajouter</button>
 </form>
 {% endif %}
+
+<h4>Créer un nouveau type</h4>
+<form method="post" action="{% url 'artist_create_type' artist.id %}" class="d-flex gap-2" style="max-width: 400px;">
+    {% csrf_token %}
+    <input type="text" name="type_name" class="form-control" placeholder="Ex : Chorégraphe" required>
+    <button type="submit" class="btn btn-primary">Créer et ajouter</button>
+</form>
 {% endblock %}
