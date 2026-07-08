@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Artist, Role, RoleUser, UserMeta
+from .models import Artist, Role, RoleUser, UserMeta, Type, ArtisteType
 from .forms import ArtistForm, RegisterForm
 
 
@@ -12,7 +12,13 @@ def artist_index(request):
 
 def artist_show(request, id):
     artist = get_object_or_404(Artist, id=id)
-    return render(request, 'catalogue/artist_show.html', {'artist': artist})
+    artist_types = ArtisteType.objects.filter(artist=artist)
+    available_types = Type.objects.exclude(id__in=artist_types.values_list('type_id', flat=True))
+    return render(request, 'catalogue/artist_show.html', {
+        'artist': artist,
+        'artist_types': artist_types,
+        'available_types': available_types,
+    })
 
 
 def artist_create(request):
@@ -47,6 +53,24 @@ def artist_delete(request, id):
     artist = get_object_or_404(Artist, id=id)
     artist.delete()
     return redirect('artist_index')
+
+
+def artist_add_type(request, id):
+    artist = get_object_or_404(Artist, id=id)
+    if request.method == 'POST':
+        type_id = request.POST.get('type_id')
+        if type_id:
+            type_obj = get_object_or_404(Type, id=type_id)
+            ArtisteType.objects.get_or_create(artist=artist, type=type_obj)
+            messages.success(request, f"Type '{type_obj}' ajouté à {artist}.")
+    return redirect('artist_show', id=artist.id)
+
+
+def artist_remove_type(request, id, type_id):
+    artist_type = get_object_or_404(ArtisteType, artist_id=id, type_id=type_id)
+    artist_type.delete()
+    messages.success(request, "Type retiré.")
+    return redirect('artist_show', id=id)
 
 
 def register(request):
