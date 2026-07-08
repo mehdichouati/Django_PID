@@ -114,3 +114,53 @@ class ArtisteTypeShow(models.Model):
 
     def __str__(self):
         return f"{self.artiste_type} - {self.show}"
+
+
+class Representation(models.Model):
+    show = models.ForeignKey(Show, on_delete=models.CASCADE, db_column='show_id')
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, db_column='location_id')
+    schedule = models.DateTimeField()
+
+    class Meta:
+        db_table = 'representations'
+
+    def __str__(self):
+        return f"{self.show} - {self.schedule}"
+
+
+class Price(models.Model):
+    type = models.CharField(max_length=30)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'prices'
+
+    def __str__(self):
+        return f"{self.type} - {self.price}€"
+
+
+class Reservation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
+    booking_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=60, default='pending')
+
+    class Meta:
+        db_table = 'reservations'
+
+    def __str__(self):
+        return f"Réservation #{self.id} - {self.user}"
+
+
+class RepresentationReservation(models.Model):
+    representation = models.ForeignKey(Representation, on_delete=models.CASCADE, db_column='representation_id')
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, db_column='reservation_id')
+    price = models.ForeignKey(Price, on_delete=models.CASCADE, db_column='price_id')
+    quantity = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        db_table = 'representation_reservation'
+
+    def __str__(self):
+        return f"{self.representation} x{self.quantity}"
