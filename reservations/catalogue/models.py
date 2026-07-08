@@ -87,3 +87,30 @@ class Location(models.Model):
 
     def __str__(self):
         return self.designation
+
+
+class Show(models.Model):
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, db_column='location_id')
+    slug = models.SlugField(max_length=60, unique=True)
+    title = models.CharField(max_length=255)
+    poster_url = models.CharField(max_length=255, blank=True, null=True)
+    duration = models.PositiveSmallIntegerField(blank=True, null=True)
+    created_in = models.PositiveSmallIntegerField(blank=True, null=True)
+    bookable = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'shows'
+
+    def __str__(self):
+        return self.title
+
+
+class ArtisteTypeShow(models.Model):
+    artiste_type = models.ForeignKey(ArtisteType, on_delete=models.CASCADE, db_column='artiste_type_id')
+    show = models.ForeignKey(Show, on_delete=models.CASCADE, db_column='show_id')
+
+    class Meta:
+        db_table = 'artiste_type_show'
+
+    def __str__(self):
+        return f"{self.artiste_type} - {self.show}"
