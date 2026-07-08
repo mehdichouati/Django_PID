@@ -1,0 +1,28 @@
+{% extends 'catalogue/base.html' %}
+{% block title %}Liste des spectacles{% endblock %}
+{% block content %}
+<h1>Liste des spectacles</h1>
+<a href="{% url 'show_create' %}" class="btn btn-success mb-3">+ Nouveau spectacle</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Lieu</th>
+            <th>Réservable</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for show in shows %}
+        <tr>
+            <td>{{ show.title }}</td>
+            <td>{{ show.location.designation|default:"—" }}</td>
+            <td>{% if show.bookable %}Oui{% else %}Non{% endif %}</td>
+            <td>
+                <a href="{% url 'show_show' show.id %}" class="btn btn-sm btn-info">Voir</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

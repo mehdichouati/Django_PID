@@ -1,0 +1,32 @@
+{% extends 'catalogue/base.html' %}
+{% block title %}{{ show.title }}{% endblock %}
+{% block content %}
+<h1>{{ show.title }}</h1>
+<a href="{% url 'show_index' %}" class="btn btn-secondary mb-3">Retour à la liste</a>
+
+<p><strong>Lieu :</strong> {{ show.location.designation|default:"—" }}</p>
+<p><strong>Réservable :</strong> {% if show.bookable %}Oui{% else %}Non{% endif %}</p>
+
+<h3>Artistes et fonctions</h3>
+<ul class="list-group mb-4" style="max-width: 500px;">
+    {% for ats in artist_types %}
+    <li class="list-group-item">
+        <a href="{% url 'artist_show' ats.artiste_type.artist.id %}">{{ ats.artiste_type.artist }}</a>
+        — {{ ats.artiste_type.type }}
+    </li>
+    {% empty %}
+    <li class="list-group-item text-muted">Aucun artiste associé.</li>
+    {% endfor %}
+</ul>
+
+<h3>Représentations</h3>
+<ul class="list-group" style="max-width: 500px;">
+    {% for rep in representations %}
+    <li class="list-group-item">
+        {{ rep.schedule }} — {{ rep.location.designation|default:show.location.designation }}
+    </li>
+    {% empty %}
+    <li class="list-group-item text-muted">Aucune représentation programmée.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

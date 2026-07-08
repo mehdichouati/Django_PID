@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Artist, Role, RoleUser, UserMeta, Type, ArtisteType
-from .forms import ArtistForm, RegisterForm
+from .models import Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow, Representation
+from .forms import ArtistForm, RegisterForm, ShowForm
 
 
 def artist_index(request):
@@ -71,6 +71,35 @@ def artist_remove_type(request, id, type_id):
     artist_type.delete()
     messages.success(request, "Type retiré.")
     return redirect('artist_show', id=id)
+
+
+def show_index(request):
+    shows = Show.objects.all()
+    return render(request, 'catalogue/show_index.html', {'shows': shows})
+
+
+def show_show(request, id):
+    show = get_object_or_404(Show, id=id)
+    artist_types = ArtisteTypeShow.objects.filter(show=show).select_related('artiste_type__artist', 'artiste_type__type')
+    representations = Representation.objects.filter(show=show)
+    return render(request, 'catalogue/show_show.html', {
+        'show': show,
+        'artist_types': artist_types,
+        'representations': representations,
+    })
+
+
+def show_create(request):
+    form = ShowForm()
+    return render(request, 'catalogue/show_form.html', {'form': form, 'title': 'Nouveau spectacle'})
+
+
+def show_store(request):
+    form = ShowForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return redirect('show_index')
+    return render(request, 'catalogue/show_form.html', {'form': form, 'title': 'Nouveau spectacle'})
 
 
 def register(request):

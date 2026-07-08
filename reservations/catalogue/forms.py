@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Artist
+from .models import Artist, Show
 
 
 class ArtistForm(forms.ModelForm):
@@ -63,3 +63,18 @@ class RegisterForm(forms.Form):
         if password and password_confirm and password != password_confirm:
             raise ValidationError("Les mots de passe ne correspondent pas.")
         return cleaned_data
+
+
+class ShowForm(forms.ModelForm):
+    class Meta:
+        model = Show
+        fields = ['location', 'slug', 'title', 'poster_url', 'duration', 'created_in', 'bookable']
+        widgets = {
+            'location': forms.Select(attrs={'class': 'form-select'}),
+            'slug': forms.TextInput(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'poster_url': forms.TextInput(attrs={'class': 'form-control'}),
+            'duration': forms.NumberInput(attrs={'class': 'form-control'}),
+            'created_in': forms.NumberInput(attrs={'class': 'form-control'}),
+            'bookable': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
