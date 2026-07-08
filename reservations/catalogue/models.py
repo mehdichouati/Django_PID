@@ -164,3 +164,19 @@ class RepresentationReservation(models.Model):
 
     def __str__(self):
         return f"{self.representation} x{self.quantity}"
+
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
+    show = models.ForeignKey(Show, on_delete=models.CASCADE, db_column='show_id')
+    review = models.TextField()
+    stars = models.PositiveSmallIntegerField()
+    validated = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'reviews'
+
+    def __str__(self):
+        return f"Avis de {self.user} sur {self.show}"
