@@ -40,3 +40,24 @@ class UserMeta(models.Model):
 
     def __str__(self):
         return f"Meta de {self.user.username}"
+
+
+class Type(models.Model):
+    type = models.CharField(max_length=60)
+
+    class Meta:
+        db_table = 'types'
+
+    def __str__(self):
+        return self.type
+
+
+class ArtisteType(models.Model):
+    artist = models.ForeignKey(Artist, on_delete=models.CASCADE, db_column='artist_id')
+    type = models.ForeignKey(Type, on_delete=models.CASCADE, db_column='type_id')
+
+    class Meta:
+        db_table = 'artiste_type'
+
+    def __str__(self):
+        return f"{self.artist} - {self.type}"
