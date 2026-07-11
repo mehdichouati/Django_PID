@@ -1,23 +1,30 @@
-{% extends 'catalogue/base.html' %}
-{% block title %}Réserver{% endblock %}
-{% block content %}
-<h1>Réserver une place</h1>
-<p><strong>{{ representation.show.title }}</strong> — {{ representation.schedule }}</p>
+from django.contrib import admin
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from catalogue import views as catalogue_views
 
-<form method="post" action="{% url 'reservation_store' representation.id %}" style="max-width: 400px;">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label class="form-label">Tarif</label>
-        <select name="price_id" class="form-select" required>
-            {% for price in prices %}
-            <option value="{{ price.id }}">{{ price.type }} — {{ price.price }}€</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Nombre de places</label>
-        <input type="number" name="quantity" class="form-control" value="1" min="1" max="10" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Confirmer la réservation</button>
-</form>
-{% endblock %}
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('artist/', include('catalogue.urls')),
+    path('show/', include('catalogue.urls_show')),
+    path('register/', catalogue_views.register, name='register'),
+    path('login/', auth_views.LoginView.as_view(template_name='catalogue/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='artist_index'), name='logout'),
+
+    path('password-reset/', auth_views.PasswordResetView.as_view(
+        template_name='catalogue/password_reset_form.html'
+    ), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='catalogue/password_reset_done.html'
+    ), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='catalogue/password_reset_confirm.html'
+    ), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='catalogue/password_reset_complete.html'
+    ), name='password_reset_complete'),
+
+    path('reservation/create/<int:representation_id>', catalogue_views.reservation_create, name='reservation_create'),
+    path('reservation/store/<int:representation_id>', catalogue_views.reservation_store, name='reservation_store'),
+    path('my-reservations/', catalogue_views.my_reservations, name='my_reservations'),
+]
