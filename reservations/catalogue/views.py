@@ -3,7 +3,11 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow, Representation
+from django.contrib.auth.decorators import login_required
+from .models import (
+    Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow,
+    Representation, Price, Reservation, RepresentationReservation
+)
 from .forms import ArtistForm, RegisterForm, ShowForm
 
 
@@ -167,3 +171,39 @@ def register(request):
     else:
         form = RegisterForm()
     return render(request, 'catalogue/register.html', {'form': form})
+
+
+@login_required
+def reservation_create(request, representation_id):
+    representation = get_object_or_404(Representation, id=representation_id)
+    prices = Price.objects.all()
+    return render(request, 'catalogue/reservation_form.html', {
+        'representation': representation,
+        'prices': prices,
+    })
+
+
+@login_required
+def reservation_store(request, representation_id):
+    representation = get_object_or_404(Representation, id=representation_id)
+    if request.method == 'POST':
+        price_id = request.POST.get('price_id')
+        quantity = request.POST.get('quantity', 1)
+        price = get_object_or_404(Price, id=price_id)
+
+        reservation = Reservation.objects.create(user=request.user, status='confirmed')
+        RepresentationReservation.objects.create(
+            representation=representation,
+            reservation=reservation,
+            price=price,
+            quantity=quantity,
+        )
+        messages.success(request, "Réservation effectuée avec succès !")
+        return redirect('my_reservations')
+    return redirect('reservation_create', representation_id=representation.id)
+
+
+@login_required
+def my_reservations(request):
+    reservations = Reservation.objects.filter(user=request.user).order_by('-booking_date')
+    return render(request, 'catalogue/my_reservations.html', {'reservations': reservations})

@@ -22,8 +22,11 @@
 <h3>Représentations</h3>
 <ul class="list-group" style="max-width: 500px;">
     {% for rep in representations %}
-    <li class="list-group-item">
+    <li class="list-group-item d-flex justify-content-between align-items-center">
         {{ rep.schedule }} — {{ rep.location.designation|default:show.location.designation }}
+        {% if show.bookable %}
+        <a href="{% url 'reservation_create' rep.id %}" class="btn btn-sm btn-primary">Réserver</a>
+        {% endif %}
     </li>
     {% empty %}
     <li class="list-group-item text-muted">Aucune représentation programmée.</li>
