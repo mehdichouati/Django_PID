@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Q
 from .models import Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow, Representation
 from .forms import ArtistForm, RegisterForm, ShowForm
 
@@ -88,7 +90,38 @@ def artist_remove_type(request, id, type_id):
 
 def show_index(request):
     shows = Show.objects.all()
-    return render(request, 'catalogue/show_index.html', {'shows': shows})
+
+    # Recherche par mot-clé (titre)
+    query = request.GET.get('q', '')
+    if query:
+        shows = shows.filter(Q(title__icontains=query))
+
+    # Filtre par réservable
+    bookable = request.GET.get('bookable', '')
+    if bookable == '1':
+        shows = shows.filter(bookable=True)
+    elif bookable == '0':
+        shows = shows.filter(bookable=False)
+
+    # Tri
+    sort = request.GET.get('sort', 'title')
+    allowed_sorts = ['title', '-title', 'created_in', '-created_in']
+    if sort in allowed_sorts:
+        shows = shows.order_by(sort)
+    else:
+        shows = shows.order_by('title')
+
+    # Pagination (10 par page, comme demandé par le PID)
+    paginator = Paginator(shows, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'catalogue/show_index.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'bookable': bookable,
+        'sort': sort,
+    })
 
 
 def show_show(request, id):

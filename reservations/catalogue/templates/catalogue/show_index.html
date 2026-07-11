@@ -3,26 +3,67 @@
 {% block content %}
 <h1>Liste des spectacles</h1>
 <a href="{% url 'show_create' %}" class="btn btn-success mb-3">+ Nouveau spectacle</a>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Rechercher un titre...">
+    </div>
+    <div class="col-auto">
+        <select name="bookable" class="form-select">
+            <option value="">Tous</option>
+            <option value="1" {% if bookable == '1' %}selected{% endif %}>Réservable</option>
+            <option value="0" {% if bookable == '0' %}selected{% endif %}>Non réservable</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filtrer</button>
+    </div>
+</form>
+
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Titre</th>
+            <th>
+                <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'title' %}-title{% else %}title{% endif %}">
+                    Titre {% if sort == 'title' %}▲{% elif sort == '-title' %}▼{% endif %}
+                </a>
+            </th>
             <th>Lieu</th>
+            <th>
+                <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'created_in' %}-created_in{% else %}created_in{% endif %}">
+                    Année {% if sort == 'created_in' %}▲{% elif sort == '-created_in' %}▼{% endif %}
+                </a>
+            </th>
             <th>Réservable</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for show in shows %}
+        {% for show in page_obj %}
         <tr>
             <td>{{ show.title }}</td>
             <td>{{ show.location.designation|default:"—" }}</td>
+            <td>{{ show.created_in|default:"—" }}</td>
             <td>{% if show.bookable %}Oui{% else %}Non{% endif %}</td>
             <td>
                 <a href="{% url 'show_show' show.id %}" class="btn btn-sm btn-info">Voir</a>
             </td>
         </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted">Aucun spectacle trouvé.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?q={{ query }}&bookable={{ bookable }}&sort={{ sort }}&page={{ page_obj.previous_page_number }}">Précédent</a></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?q={{ query }}&bookable={{ bookable }}&sort={{ sort }}&page={{ page_obj.next_page_number }}">Suivant</a></li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}
