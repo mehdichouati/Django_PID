@@ -1,0 +1,62 @@
+/* ===========================================
+   Palette et variables — à modifier ici seulement
+   =========================================== */
+:root {
+    --color-primary: #6C4DE2;      /* violet — couleur d'accent principale */
+    --color-primary-dark: #5638C4;
+    --color-dark: #1E1B2E;         /* fond navbar/footer */
+    --color-bg: #F7F6FB;           /* fond de page */
+    --color-text: #2A2740;
+    --radius: 10px;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--color-dark) !important;
+}
+.navbar .nav-link {
+    margin-left: 1.25rem;
+}
+
+/* Boutons */
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+}
+.btn, .form-control, .form-select {
+    border-radius: var(--radius);
+}
+
+/* Cartes (fiches spectacle, lieux culturels...) */
+.card {
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 10px rgba(30, 27, 46, 0.06);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(30, 27, 46, 0.1);
+}
+
+/* Titres */
+h1, h2, h3 {
+    font-weight: 600;
+}
+
+/* Tableaux */
+.table {
+    background-color: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
