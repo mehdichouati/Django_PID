@@ -1,4 +1,6 @@
+import tablib
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -126,6 +128,36 @@ def show_index(request):
         'bookable': bookable,
         'sort': sort,
     })
+
+
+def show_export_csv(request):
+    """Itération 7 - Progiciel tiers : export du catalogue en CSV via tablib."""
+    shows = Show.objects.all()
+
+    # On respecte les mêmes filtres que la liste (recherche + réservable)
+    query = request.GET.get('q', '')
+    if query:
+        shows = shows.filter(Q(title__icontains=query))
+
+    bookable = request.GET.get('bookable', '')
+    if bookable == '1':
+        shows = shows.filter(bookable=True)
+    elif bookable == '0':
+        shows = shows.filter(bookable=False)
+
+    dataset = tablib.Dataset(headers=['Titre', 'Lieu', 'Année', 'Durée (min)', 'Réservable'])
+    for show in shows:
+        dataset.append([
+            show.title,
+            show.location.designation if show.location else '',
+            show.created_in or '',
+            show.duration or '',
+            'Oui' if show.bookable else 'Non',
+        ])
+
+    response = HttpResponse(dataset.export('csv'), content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="catalogue_spectacles.csv"'
+    return response
 
 
 def show_show(request, id):
