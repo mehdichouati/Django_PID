@@ -1,4 +1,5 @@
 import tablib
+import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -158,6 +159,32 @@ def show_export_csv(request):
     response = HttpResponse(dataset.export('csv'), content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="catalogue_spectacles.csv"'
     return response
+
+
+def external_venues(request):
+    """Itération 9 - Consommer une API publique externe (Open Data Ville de Bruxelles)."""
+    url = 'https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/lieux_culturels_touristiques_evenementiels_visitbrussels_vbx/records'
+    params = {'limit': 20}
+
+    query = request.GET.get('q', '')
+    if query:
+        params['where'] = f'search(translations_fr_name, "{query}")'
+
+    venues = []
+    error = None
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        venues = data.get('results', [])
+    except requests.RequestException:
+        error = "Impossible de contacter l'API Open Data de Bruxelles pour le moment."
+
+    return render(request, 'catalogue/external_venues.html', {
+        'venues': venues,
+        'query': query,
+        'error': error,
+    })
 
 
 def show_show(request, id):

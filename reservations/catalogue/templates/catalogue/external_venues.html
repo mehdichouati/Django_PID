@@ -1,0 +1,45 @@
+{% extends 'catalogue/base.html' %}
+{% block title %}Lieux culturels à Bruxelles (Open Data){% endblock %}
+{% block content %}
+<h1>Lieux culturels à Bruxelles</h1>
+<p class="text-muted">Données fournies en temps réel par l'API Open Data de la Ville de Bruxelles (Visit.Brussels).</p>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Rechercher un lieu...">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </div>
+</form>
+
+{% if error %}
+    <div class="alert alert-warning">{{ error }}</div>
+{% endif %}
+
+<div class="row">
+    {% for venue in venues %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ venue.translations_fr_name|default:"Lieu sans nom" }}</h5>
+                <p class="card-text text-muted">
+                    {% for cat in venue.visit_category_fr_multi %}{{ cat }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </p>
+                <p class="card-text">
+                    {{ venue.translations_fr_address_line1 }}<br>
+                    {{ venue.translations_fr_address_zip }} {{ venue.add_municipality_fr }}
+                </p>
+                {% if venue.translations_fr_website %}
+                <a href="{{ venue.translations_fr_website }}" target="_blank" class="btn btn-sm btn-outline-primary">Site web</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    {% if not error %}
+    <p class="text-muted">Aucun résultat.</p>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endblock %}
