@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from .decorators import role_required
 from .models import (
     Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow,
     Representation, Price, Reservation, RepresentationReservation
@@ -14,9 +15,20 @@ from .models import (
 from .forms import ArtistForm, RegisterForm, ShowForm
 
 
+def is_user_admin(user):
+    """Vérifie si l'utilisateur connecté a le rôle admin (ou est superuser)."""
+    return user.is_authenticated and (
+        user.is_superuser or
+        RoleUser.objects.filter(user=user, role__role='admin').exists()
+    )
+
+
 def artist_index(request):
     artists = Artist.objects.all()
-    return render(request, 'catalogue/artist_index.html', {'artists': artists})
+    return render(request, 'catalogue/artist_index.html', {
+        'artists': artists,
+        'is_admin': is_user_admin(request.user),
+    })
 
 
 def artist_show(request, id):
@@ -27,14 +39,17 @@ def artist_show(request, id):
         'artist': artist,
         'artist_types': artist_types,
         'available_types': available_types,
+        'is_admin': is_user_admin(request.user),
     })
 
 
+@role_required('admin')
 def artist_create(request):
     form = ArtistForm()
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Nouvel artiste'})
 
 
+@role_required('admin')
 def artist_store(request):
     form = ArtistForm(request.POST)
     if form.is_valid():
@@ -43,12 +58,14 @@ def artist_store(request):
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Nouvel artiste'})
 
 
+@role_required('admin')
 def artist_edit(request, id):
     artist = get_object_or_404(Artist, id=id)
     form = ArtistForm(instance=artist)
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Modifier l\'artiste'})
 
 
+@role_required('admin')
 def artist_update(request, id):
     artist = get_object_or_404(Artist, id=id)
     form = ArtistForm(request.POST, instance=artist)
@@ -58,12 +75,14 @@ def artist_update(request, id):
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Modifier l\'artiste'})
 
 
+@role_required('admin')
 def artist_delete(request, id):
     artist = get_object_or_404(Artist, id=id)
     artist.delete()
     return redirect('artist_index')
 
 
+@role_required('admin')
 def artist_add_type(request, id):
     artist = get_object_or_404(Artist, id=id)
     if request.method == 'POST':
@@ -75,6 +94,7 @@ def artist_add_type(request, id):
     return redirect('artist_show', id=artist.id)
 
 
+@role_required('admin')
 def artist_create_type(request, id):
     artist = get_object_or_404(Artist, id=id)
     if request.method == 'POST':
@@ -88,6 +108,7 @@ def artist_create_type(request, id):
     return redirect('artist_show', id=artist.id)
 
 
+@role_required('admin')
 def artist_remove_type(request, id, type_id):
     artist_type = get_object_or_404(ArtisteType, artist_id=id, type_id=type_id)
     artist_type.delete()
@@ -128,6 +149,7 @@ def show_index(request):
         'query': query,
         'bookable': bookable,
         'sort': sort,
+        'is_admin': is_user_admin(request.user),
     })
 
 
@@ -198,11 +220,13 @@ def show_show(request, id):
     })
 
 
+@role_required('admin')
 def show_create(request):
     form = ShowForm()
     return render(request, 'catalogue/show_form.html', {'form': form, 'title': 'Nouveau spectacle'})
 
 
+@role_required('admin')
 def show_store(request):
     form = ShowForm(request.POST)
     if form.is_valid():

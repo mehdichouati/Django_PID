@@ -9,16 +9,19 @@
     {% for at in artist_types %}
     <li class="list-group-item d-flex justify-content-between align-items-center">
         {{ at.type }}
+        {% if is_admin %}
         <form method="post" action="{% url 'artist_remove_type' artist.id at.type.id %}" onsubmit="return confirm('Retirer ce type ?');">
             {% csrf_token %}
             <button type="submit" class="btn btn-sm btn-danger">Retirer</button>
         </form>
+        {% endif %}
     </li>
     {% empty %}
     <li class="list-group-item text-muted">Aucun type associé pour l'instant.</li>
     {% endfor %}
 </ul>
 
+{% if is_admin %}
 {% if available_types %}
 <h4>Ajouter un type existant</h4>
 <form method="post" action="{% url 'artist_add_type' artist.id %}" class="d-flex gap-2 mb-4" style="max-width: 400px;">
@@ -38,4 +41,5 @@
     <input type="text" name="type_name" class="form-control" placeholder="Ex : Chorégraphe" required>
     <button type="submit" class="btn btn-primary">Créer et ajouter</button>
 </form>
+{% endif %}
 {% endblock %}

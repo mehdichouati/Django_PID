@@ -2,7 +2,9 @@
 {% block title %}Liste des artistes{% endblock %}
 {% block content %}
 <h1>Liste des artistes</h1>
+{% if is_admin %}
 <a href="{% url 'artist_create' %}" class="btn btn-success mb-3">+ Nouvel artiste</a>
+{% endif %}
 <table class="table table-striped">
     <thead>
         <tr>
@@ -18,11 +20,13 @@
             <td>{{ artist.lastname }}</td>
             <td>
                 <a href="{% url 'artist_show' artist.id %}" class="btn btn-sm btn-info">Voir</a>
+                {% if is_admin %}
                 <a href="{% url 'artist_edit' artist.id %}" class="btn btn-sm btn-warning">Modifier</a>
                 <form method="post" action="{% url 'artist_delete' artist.id %}" style="display:inline;" onsubmit="return confirm('Supprimer cet artiste ?');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
                 </form>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

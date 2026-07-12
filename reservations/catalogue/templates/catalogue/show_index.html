@@ -2,7 +2,9 @@
 {% block title %}Liste des spectacles{% endblock %}
 {% block content %}
 <h1>Liste des spectacles</h1>
+{% if is_admin %}
 <a href="{% url 'show_create' %}" class="btn btn-success mb-3">+ Nouveau spectacle</a>
+{% endif %}
 <a href="{% url 'show_export_csv' %}?q={{ query }}&bookable={{ bookable }}" class="btn btn-outline-secondary mb-3">⬇ Exporter en CSV</a>
 
 <form method="get" class="row g-2 mb-3">
