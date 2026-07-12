@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'catalogue',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,16 @@ LOGIN_URL = 'login'
 
 # Email (mode développement : les emails s'affichent dans le terminal)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# REST Framework authentifications & permissions
+# https://www.django-rest-framework.org/api-guide/authentication/
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
