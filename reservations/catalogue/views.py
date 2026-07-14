@@ -272,7 +272,58 @@ def external_venues(request):
         'venues': venues,
         'query': query,
         'error': error,
+        'is_admin': is_user_admin(request.user),
     })
+
+
+@role_required('admin')
+def sync_locations_from_opendata(request):
+    """Mise à jour du catalogue (lieux) via le Web service tiers Open Data Bruxelles."""
+    if request.method != 'POST':
+        return redirect('external_venues')
+
+    url = 'https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/lieux_culturels_touristiques_evenementiels_visitbrussels_vbx/records'
+    params = {'limit': 20}
+
+    created_count = 0
+    updated_count = 0
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        venues = data.get('results', [])
+
+        for venue in venues:
+            name = (venue.get('translations_fr_name') or '').strip()
+            if not name:
+                continue
+
+            designation = name[:60]
+            slug = slugify(designation)[:60]
+            address = venue.get('translations_fr_address_line1') or ''
+            website = venue.get('translations_fr_website') or ''
+
+            location, created = Location.objects.get_or_create(
+                slug=slug,
+                defaults={
+                    'designation': designation,
+                    'address': address,
+                    'website': website,
+                }
+            )
+            if created:
+                created_count += 1
+            else:
+                location.address = address
+                location.website = website
+                location.save()
+                updated_count += 1
+
+        messages.success(request, f"Synchronisation terminée : {created_count} lieu(x) créé(s), {updated_count} mis à jour.")
+    except requests.RequestException:
+        messages.error(request, "Impossible de contacter l'API Open Data pour synchroniser le catalogue.")
+
+    return redirect('external_venues')
 
 
 def show_show(request, id):
