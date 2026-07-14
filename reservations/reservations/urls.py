@@ -2,12 +2,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from catalogue import views as catalogue_views
+from catalogue.feeds import UpcomingRepresentationsFeed
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('artist/', include('catalogue.urls')),
     path('show/', include('catalogue.urls_show')),
     path('api/', include('api.urls')),
+    path('rss/prochaines-representations/', UpcomingRepresentationsFeed(), name='rss_representations'),
     path('profile/', catalogue_views.profile_edit, name='profile_edit'),
     path('register/', catalogue_views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='catalogue/login.html'), name='login'),
