@@ -7,5 +7,6 @@ urlpatterns = [
     path('store', views.show_store, name='show_store'),
     path('export/csv', views.show_export_csv, name='show_export_csv'),
     path('external/venues', views.external_venues, name='external_venues'),
+    path('<int:id>/review', views.review_store, name='review_store'),
     path('<int:id>', views.show_show, name='show_show'),
 ]

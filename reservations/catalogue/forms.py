@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Artist, Show
+from .models import Artist, Show, Review
 
 
 class ArtistForm(forms.ModelForm):
@@ -78,3 +78,25 @@ class ShowForm(forms.ModelForm):
             'created_in': forms.NumberInput(attrs={'class': 'form-control'}),
             'bookable': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['review', 'stars']
+        widgets = {
+            'review': forms.Textarea(attrs={
+                'class': 'form-control', 'rows': 3,
+                'placeholder': 'Votre avis sur ce spectacle...'
+            }),
+            'stars': forms.Select(
+                choices=[(i, i) for i in range(1, 6)],
+                attrs={'class': 'form-select'}
+            ),
+        }
+
+    def clean_review(self):
+        review = self.cleaned_data['review'].strip()
+        if not review:
+            raise forms.ValidationError("L'avis ne peut pas être vide.")
+        return review

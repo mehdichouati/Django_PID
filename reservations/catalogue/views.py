@@ -5,14 +5,14 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Avg
 from django.contrib.auth.decorators import login_required
 from .decorators import role_required
 from .models import (
     Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow,
-    Representation, Price, Reservation, RepresentationReservation
+    Representation, Price, Reservation, RepresentationReservation, Review
 )
-from .forms import ArtistForm, RegisterForm, ShowForm
+from .forms import ArtistForm, RegisterForm, ShowForm, ReviewForm
 
 
 def is_user_admin(user):
@@ -157,7 +157,6 @@ def show_export_csv(request):
     """Itération 7 - Progiciel tiers : export du catalogue en CSV via tablib."""
     shows = Show.objects.all()
 
-    # On respecte les mêmes filtres que la liste (recherche + réservable)
     query = request.GET.get('q', '')
     if query:
         shows = shows.filter(Q(title__icontains=query))
@@ -213,11 +212,32 @@ def show_show(request, id):
     show = get_object_or_404(Show, id=id)
     artist_types = ArtisteTypeShow.objects.filter(show=show).select_related('artiste_type__artist', 'artiste_type__type')
     representations = Representation.objects.filter(show=show)
+    reviews = Review.objects.filter(show=show, validated=True).order_by('-created_at')
+    average_stars = reviews.aggregate(Avg('stars'))['stars__avg']
     return render(request, 'catalogue/show_show.html', {
         'show': show,
         'artist_types': artist_types,
         'representations': representations,
+        'reviews': reviews,
+        'average_stars': average_stars,
+        'review_form': ReviewForm(),
     })
+
+
+@login_required
+def review_store(request, id):
+    show = get_object_or_404(Show, id=id)
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.show = show
+            review.save()
+            messages.success(request, "Votre avis a été soumis et sera visible après validation.")
+        else:
+            messages.error(request, "Merci de corriger les erreurs du formulaire.")
+    return redirect('show_show', id=show.id)
 
 
 @role_required('admin')

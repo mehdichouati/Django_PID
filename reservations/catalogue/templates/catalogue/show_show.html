@@ -3,10 +3,8 @@
 {% block content %}
 <h1>{{ show.title }}</h1>
 <a href="{% url 'show_index' %}" class="btn btn-secondary mb-3">Retour à la liste</a>
-
 <p><strong>Lieu :</strong> {{ show.location.designation|default:"—" }}</p>
 <p><strong>Réservable :</strong> {% if show.bookable %}Oui{% else %}Non{% endif %}</p>
-
 <h3>Artistes et fonctions</h3>
 <ul class="list-group mb-4" style="max-width: 500px;">
     {% for ats in artist_types %}
@@ -18,9 +16,8 @@
     <li class="list-group-item text-muted">Aucun artiste associé.</li>
     {% endfor %}
 </ul>
-
 <h3>Représentations</h3>
-<ul class="list-group" style="max-width: 500px;">
+<ul class="list-group mb-4" style="max-width: 500px;">
     {% for rep in representations %}
     <li class="list-group-item d-flex justify-content-between align-items-center">
         {{ rep.schedule }} — {{ rep.location.designation|default:show.location.designation }}
@@ -32,4 +29,29 @@
     <li class="list-group-item text-muted">Aucune représentation programmée.</li>
     {% endfor %}
 </ul>
+
+<h3>Avis des spectateurs
+    {% if average_stars %}<small class="text-muted">({{ average_stars|floatformat:1 }}/5 ⭐)</small>{% endif %}
+</h3>
+<ul class="list-group mb-3" style="max-width: 500px;">
+    {% for review in reviews %}
+    <li class="list-group-item">
+        <strong>{{ review.user.first_name }}</strong> — {{ review.stars }}/5 ⭐
+        <p class="mb-0">{{ review.review }}</p>
+    </li>
+    {% empty %}
+    <li class="list-group-item text-muted">Aucun avis pour le moment.</li>
+    {% endfor %}
+</ul>
+
+{% if user.is_authenticated %}
+<h4>Laisser un avis</h4>
+<form method="post" action="{% url 'review_store' show.id %}" style="max-width: 500px;">
+    {% csrf_token %}
+    {{ review_form.as_p }}
+    <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+</form>
+{% else %}
+<p><a href="{% url 'login' %}">Connectez-vous</a> pour laisser un avis.</p>
+{% endif %}
 {% endblock %}
