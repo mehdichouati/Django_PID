@@ -7,8 +7,9 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.utils.text import slugify
-from django.db.models import Q, Avg
+from django.db.models import Q, Avg, Prefetch
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_page
 from .decorators import role_required
 from .models import (
     Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow,
@@ -141,17 +142,22 @@ def show_index(request):
     else:
         shows = shows.order_by('title')
 
+    # Optimisation BDD : on précharge en une seule requête les représentations
+    # futures de tous les spectacles affichés, au lieu d'une requête par spectacle (N+1)
+    now = timezone.now()
+    future_representations = Representation.objects.filter(schedule__gte=now).order_by('schedule')
+    shows = shows.select_related('location').prefetch_related(
+        Prefetch('representation_set', queryset=future_representations, to_attr='future_representations')
+    )
+
     # Pagination (10 par page, comme demandé par le PID)
     paginator = Paginator(shows, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Pour chaque spectacle affiché, on calcule sa prochaine représentation à venir
-    now = timezone.now()
+    # La prochaine représentation est simplement la première de la liste préchargée
     for show in page_obj:
-        show.next_representation = Representation.objects.filter(
-            show=show, schedule__gte=now
-        ).order_by('schedule').first()
+        show.next_representation = show.future_representations[0] if show.future_representations else None
 
     return render(request, 'catalogue/show_index.html', {
         'page_obj': page_obj,
@@ -241,8 +247,10 @@ def show_import_csv(request):
     return render(request, 'catalogue/show_import.html')
 
 
+@cache_page(60)
 def external_venues(request):
-    """Itération 9 - Consommer une API publique externe (Open Data Ville de Bruxelles)."""
+    """Itération 9 - Consommer une API publique externe (Open Data Ville de Bruxelles).
+    Mise en cache 60s : évite de re-solliciter l'API externe à chaque visite."""
     url = 'https://opendata.brussels.be/api/explore/v2.1/catalog/datasets/lieux_culturels_touristiques_evenementiels_visitbrussels_vbx/records'
     params = {'limit': 20}
 
