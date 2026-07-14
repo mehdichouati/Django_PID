@@ -6,6 +6,9 @@
 <a href="{% url 'show_create' %}" class="btn btn-success mb-3">+ Nouveau spectacle</a>
 {% endif %}
 <a href="{% url 'show_export_csv' %}?q={{ query }}&bookable={{ bookable }}" class="btn btn-outline-secondary mb-3">⬇ Exporter en CSV</a>
+{% if is_admin %}
+<a href="{% url 'show_import_csv' %}" class="btn btn-outline-primary mb-3">⬆ Importer en CSV</a>
+{% endif %}
 <form method="get" class="row g-2 mb-3">
     <div class="col-auto">
         <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Rechercher un titre...">

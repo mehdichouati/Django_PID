@@ -6,12 +6,13 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.utils import timezone
+from django.utils.text import slugify
 from django.db.models import Q, Avg
 from django.contrib.auth.decorators import login_required
 from .decorators import role_required
 from .models import (
     Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow,
-    Representation, Price, Reservation, RepresentationReservation, Review
+    Representation, Price, Reservation, RepresentationReservation, Review, Location
 )
 from .forms import ArtistForm, RegisterForm, ShowForm, ReviewForm, ProfileForm
 
@@ -188,6 +189,56 @@ def show_export_csv(request):
     response = HttpResponse(dataset.export('csv'), content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="catalogue_spectacles.csv"'
     return response
+
+
+@role_required('admin')
+def show_import_csv(request):
+    """Import de spectacles depuis un fichier CSV (même format que l'export)."""
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, "Merci de sélectionner un fichier CSV.")
+            return redirect('show_import_csv')
+
+        try:
+            data = csv_file.read().decode('utf-8')
+            dataset = tablib.Dataset().load(data, format='csv')
+        except Exception:
+            messages.error(request, "Le fichier CSV n'a pas pu être lu. Vérifiez son format.")
+            return redirect('show_import_csv')
+
+        created_count = 0
+        skipped_count = 0
+        for row in dataset.dict:
+            title = (row.get('Titre') or '').strip()
+            location_name = (row.get('Lieu') or '').strip()
+
+            if not title:
+                skipped_count += 1
+                continue
+
+            slug = slugify(title)
+            if Show.objects.filter(slug=slug).exists():
+                skipped_count += 1
+                continue
+
+            location = Location.objects.filter(designation=location_name).first()
+            bookable_value = str(row.get('Réservable') or '').strip().lower()
+
+            Show.objects.create(
+                title=title,
+                slug=slug,
+                location=location,
+                created_in=row.get('Année') or None,
+                duration=row.get('Durée (min)') or None,
+                bookable=bookable_value in ['oui', 'yes', 'true', '1'],
+            )
+            created_count += 1
+
+        messages.success(request, f"{created_count} spectacle(s) importé(s), {skipped_count} ignoré(s) (titre manquant ou doublon).")
+        return redirect('show_index')
+
+    return render(request, 'catalogue/show_import.html')
 
 
 def external_venues(request):

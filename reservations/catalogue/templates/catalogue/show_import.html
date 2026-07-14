@@ -1,0 +1,17 @@
+{% extends 'catalogue/base.html' %}
+{% block title %}Importer des spectacles (CSV){% endblock %}
+{% block content %}
+<h1>Importer des spectacles depuis un CSV</h1>
+<p class="text-muted">
+    Le fichier doit contenir les colonnes : <code>Titre</code>, <code>Lieu</code>, <code>Année</code>,
+    <code>Durée (min)</code>, <code>Réservable</code> (Oui/Non) — même format que l'export CSV du catalogue.
+</p>
+<form method="post" enctype="multipart/form-data" style="max-width: 500px;">
+    {% csrf_token %}
+    <div class="mb-3">
+        <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Importer</button>
+    <a href="{% url 'show_index' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}
