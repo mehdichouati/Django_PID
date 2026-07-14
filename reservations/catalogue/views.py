@@ -12,7 +12,7 @@ from .models import (
     Artist, Role, RoleUser, UserMeta, Type, ArtisteType, Show, ArtisteTypeShow,
     Representation, Price, Reservation, RepresentationReservation, Review
 )
-from .forms import ArtistForm, RegisterForm, ShowForm, ReviewForm
+from .forms import ArtistForm, RegisterForm, ShowForm, ReviewForm, ProfileForm
 
 
 def is_user_admin(user):
@@ -304,6 +304,30 @@ def reservation_store(request, representation_id):
         messages.success(request, "Réservation effectuée avec succès !")
         return redirect('my_reservations')
     return redirect('reservation_create', representation_id=representation.id)
+
+
+@login_required
+def profile_edit(request):
+    user_meta, _ = UserMeta.objects.get_or_create(user=request.user, defaults={'langue': 'FR'})
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, user=request.user)
+        if form.is_valid():
+            request.user.first_name = form.cleaned_data['first_name']
+            request.user.last_name = form.cleaned_data['last_name']
+            request.user.email = form.cleaned_data['email']
+            request.user.save()
+            user_meta.langue = form.cleaned_data['langue']
+            user_meta.save()
+            messages.success(request, "Votre profil a été mis à jour.")
+            return redirect('profile_edit')
+    else:
+        form = ProfileForm(initial={
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'langue': user_meta.langue,
+        }, user=request.user)
+    return render(request, 'catalogue/profile_form.html', {'form': form})
 
 
 @login_required

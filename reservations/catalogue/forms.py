@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Artist, Show, Review
+from .models import Artist, Show, Review, UserMeta
 
 
 class ArtistForm(forms.ModelForm):
@@ -100,3 +100,27 @@ class ReviewForm(forms.ModelForm):
         if not review:
             raise forms.ValidationError("L'avis ne peut pas être vide.")
         return review
+
+
+class ProfileForm(forms.Form):
+    first_name = forms.CharField(max_length=60, label="Prénom", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name = forms.CharField(max_length=60, label="Nom", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    email = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    langue = forms.ChoiceField(
+        choices=[('FR', 'Français'), ('EN', 'English'), ('NL', 'Nederlands')],
+        label="Langue",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        qs = User.objects.filter(email=email)
+        if self.user:
+            qs = qs.exclude(pk=self.user.pk)
+        if qs.exists():
+            raise ValidationError("Cet email est déjà utilisé par un autre compte.")
+        return email

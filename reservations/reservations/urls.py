@@ -8,6 +8,7 @@ urlpatterns = [
     path('artist/', include('catalogue.urls')),
     path('show/', include('catalogue.urls_show')),
     path('api/', include('api.urls')),
+    path('profile/', catalogue_views.profile_edit, name='profile_edit'),
     path('register/', catalogue_views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='catalogue/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='artist_index'), name='logout'),
