@@ -461,6 +461,7 @@ def profile_edit(request):
             request.user.email = form.cleaned_data['email']
             request.user.save()
             user_meta.langue = form.cleaned_data['langue']
+            user_meta.affiliate_level = form.cleaned_data['affiliate_level']
             user_meta.save()
             messages.success(request, "Votre profil a été mis à jour.")
             return redirect('profile_edit')
@@ -470,6 +471,7 @@ def profile_edit(request):
             'last_name': request.user.last_name,
             'email': request.user.email,
             'langue': user_meta.langue,
+            'affiliate_level': user_meta.affiliate_level,
         }, user=request.user)
     return render(request, 'catalogue/profile_form.html', {'form': form})
 

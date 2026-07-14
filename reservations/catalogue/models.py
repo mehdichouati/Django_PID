@@ -32,8 +32,15 @@ class RoleUser(models.Model):
 
 
 class UserMeta(models.Model):
+    AFFILIATE_LEVELS = [
+        ('free', 'Free'),
+        ('starter', 'Starter'),
+        ('premium', 'Premium'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='meta')
     langue = models.CharField(max_length=2, default='FR')
+    affiliate_level = models.CharField(max_length=10, choices=AFFILIATE_LEVELS, default='free')
 
     class Meta:
         db_table = 'user_meta'

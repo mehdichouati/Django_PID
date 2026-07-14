@@ -111,6 +111,11 @@ class ProfileForm(forms.Form):
         label="Langue",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
+    affiliate_level = forms.ChoiceField(
+        choices=[('free', 'Free'), ('starter', 'Starter'), ('premium', 'Premium')],
+        label="Niveau d'affiliation API",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
