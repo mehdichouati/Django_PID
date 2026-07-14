@@ -1,7 +1,7 @@
 import tablib
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -229,7 +229,19 @@ def show_show(request, id):
         'reviews': reviews,
         'average_stars': average_stars,
         'review_form': ReviewForm(),
+        'is_admin': is_user_admin(request.user),
     })
+
+
+@role_required('admin')
+def show_toggle_bookable(request, id):
+    """Bascule le statut réservable d'un spectacle via AJAX (JSON), sans recharger la page."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
+    show = get_object_or_404(Show, id=id)
+    show.bookable = not show.bookable
+    show.save()
+    return JsonResponse({'bookable': show.bookable})
 
 
 @login_required

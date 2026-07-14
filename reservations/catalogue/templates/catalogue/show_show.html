@@ -4,7 +4,15 @@
 <h1>{{ show.title }}</h1>
 <a href="{% url 'show_index' %}" class="btn btn-secondary mb-3">Retour à la liste</a>
 <p><strong>Lieu :</strong> {{ show.location.designation|default:"—" }}</p>
-<p><strong>Réservable :</strong> {% if show.bookable %}Oui{% else %}Non{% endif %}</p>
+<p>
+    <strong>Réservable :</strong>
+    <span id="bookable-status">{% if show.bookable %}Oui{% else %}Non{% endif %}</span>
+    {% if is_admin %}
+    <button id="toggle-bookable-btn" data-show-id="{{ show.id }}" class="btn btn-sm btn-outline-primary ms-2">
+        Basculer (AJAX)
+    </button>
+    {% endif %}
+</p>
 <h3>Artistes et fonctions</h3>
 <ul class="list-group mb-4" style="max-width: 500px;">
     {% for ats in artist_types %}
@@ -53,5 +61,24 @@
 </form>
 {% else %}
 <p><a href="{% url 'login' %}">Connectez-vous</a> pour laisser un avis.</p>
+{% endif %}
+
+{% if is_admin %}
+<script>
+    document.getElementById('toggle-bookable-btn').addEventListener('click', function () {
+        const showId = this.dataset.showId;
+        fetch(`/show/${showId}/toggle-bookable`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('bookable-status').textContent = data.bookable ? 'Oui' : 'Non';
+        })
+        .catch(error => console.error('Erreur AJAX :', error));
+    });
+</script>
 {% endif %}
 {% endblock %}
