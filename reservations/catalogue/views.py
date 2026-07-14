@@ -295,6 +295,20 @@ def show_toggle_bookable(request, id):
     return JsonResponse({'bookable': show.bookable})
 
 
+@role_required('admin')
+def show_bulk_delete(request):
+    """Suppression groupée de spectacles sélectionnés via cases à cocher."""
+    if request.method == 'POST':
+        show_ids = request.POST.getlist('show_ids')
+        if show_ids:
+            deleted_count = Show.objects.filter(id__in=show_ids).count()
+            Show.objects.filter(id__in=show_ids).delete()
+            messages.success(request, f"{deleted_count} spectacle(s) supprimé(s).")
+        else:
+            messages.error(request, "Aucun spectacle sélectionné.")
+    return redirect('show_index')
+
+
 @login_required
 def review_store(request, id):
     show = get_object_or_404(Show, id=id)

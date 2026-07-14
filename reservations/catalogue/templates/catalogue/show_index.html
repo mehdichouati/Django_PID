@@ -24,21 +24,64 @@
         <button type="submit" class="btn btn-primary">Filtrer</button>
     </div>
 </form>
+
+{% if is_admin %}
+<form method="post" action="{% url 'show_bulk_delete' %}" id="bulk-delete-form" onsubmit="return confirm('Supprimer les spectacles sélectionnés ?');">
+    {% csrf_token %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="select-all"></th>
+                <th>
+                    <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'title' %}-title{% else %}title{% endif %}">
+                        Titre {% if sort == 'title' %}▲{% elif sort == '-title' %}▼{% endif %}
+                    </a>
+                </th>
+                <th>Lieu</th>
+                <th>Prochaine représentation</th>
+                <th>
+                    <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'created_in' %}-created_in{% else %}created_in{% endif %}">
+                        Année {% if sort == 'created_in' %}▲{% elif sort == '-created_in' %}▼{% endif %}
+                    </a>
+                </th>
+                <th>Réservable</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for show in page_obj %}
+            <tr>
+                <td><input type="checkbox" name="show_ids" value="{{ show.id }}" class="show-checkbox"></td>
+                <td>{{ show.title }}</td>
+                <td>{{ show.location.designation|default:"—" }}</td>
+                <td>
+                    {% if show.next_representation %}
+                        {{ show.next_representation.schedule|date:"d/m/Y à H\hi" }}
+                    {% else %}
+                        <span class="text-muted">Aucune date programmée</span>
+                    {% endif %}
+                </td>
+                <td>{{ show.created_in|default:"—" }}</td>
+                <td>{% if show.bookable %}Oui{% else %}Non{% endif %}</td>
+                <td>
+                    <a href="{% url 'show_show' show.id %}" class="btn btn-sm btn-info">Voir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-muted">Aucun spectacle trouvé.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-danger mb-3">🗑 Supprimer la sélection</button>
+</form>
+{% else %}
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>
-                <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'title' %}-title{% else %}title{% endif %}">
-                    Titre {% if sort == 'title' %}▲{% elif sort == '-title' %}▼{% endif %}
-                </a>
-            </th>
+            <th>Titre</th>
             <th>Lieu</th>
             <th>Prochaine représentation</th>
-            <th>
-                <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'created_in' %}-created_in{% else %}created_in{% endif %}">
-                    Année {% if sort == 'created_in' %}▲{% elif sort == '-created_in' %}▼{% endif %}
-                </a>
-            </th>
+            <th>Année</th>
             <th>Réservable</th>
             <th>Actions</th>
         </tr>
@@ -66,6 +109,8 @@
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
+
 <nav>
     <ul class="pagination">
         {% if page_obj.has_previous %}
@@ -77,4 +122,14 @@
         {% endif %}
     </ul>
 </nav>
+
+{% if is_admin %}
+<script>
+    document.getElementById('select-all').addEventListener('change', function () {
+        document.querySelectorAll('.show-checkbox').forEach(function (checkbox) {
+            checkbox.checked = this.checked;
+        }.bind(this));
+    });
+</script>
+{% endif %}
 {% endblock %}
