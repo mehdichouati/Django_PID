@@ -12,20 +12,20 @@
 <body>
 <nav class="navbar navbar-expand navbar-dark bg-dark px-3">
     <a class="navbar-brand" href="{% url 'artist_index' %}">Projet Réservations</a>
-    <a class="nav-link text-white" href="{% url 'show_index' %}">Spectacles</a>
-    <a class="nav-link text-white" href="{% url 'artist_index' %}">Artistes</a>
-    <a class="nav-link text-white" href="{% url 'external_venues' %}">Lieux culturels (Open Data)</a>
+    <a class="nav-link text-white" href="{% url 'show_index' %}">{{ t.nav_spectacles }}</a>
+    <a class="nav-link text-white" href="{% url 'artist_index' %}">{{ t.nav_artistes }}</a>
+    <a class="nav-link text-white" href="{% url 'external_venues' %}">{{ t.nav_lieux_culturels }}</a>
     <div class="ms-auto d-flex align-items-center gap-2">
         {% if user.is_authenticated %}
-            <a href="{% url 'my_reservations' %}" class="btn btn-outline-light btn-sm">Mes réservations</a>
-            <a href="{% url 'profile_edit' %}" class="text-white text-decoration-none">Bonjour {{ user.first_name }}</a>
+            <a href="{% url 'my_reservations' %}" class="btn btn-outline-light btn-sm">{{ t.nav_mes_reservations }}</a>
+            <a href="{% url 'profile_edit' %}" class="text-white text-decoration-none">{{ t.nav_bonjour }} {{ user.first_name }}</a>
             <form method="post" action="{% url 'logout' %}" class="d-inline">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-light btn-sm">Se déconnecter</button>
+                <button type="submit" class="btn btn-outline-light btn-sm">{{ t.nav_se_deconnecter }}</button>
             </form>
         {% else %}
-            <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">Se connecter</a>
-            <a href="{% url 'register' %}" class="btn btn-light btn-sm">S'inscrire</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">{{ t.nav_se_connecter }}</a>
+            <a href="{% url 'register' %}" class="btn btn-light btn-sm">{{ t.nav_sinscrire }}</a>
         {% endif %}
     </div>
 </nav>
