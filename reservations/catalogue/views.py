@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.utils import timezone
 from django.db.models import Q, Avg
 from django.contrib.auth.decorators import login_required
 from .decorators import role_required
@@ -143,6 +144,13 @@ def show_index(request):
     paginator = Paginator(shows, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    # Pour chaque spectacle affiché, on calcule sa prochaine représentation à venir
+    now = timezone.now()
+    for show in page_obj:
+        show.next_representation = Representation.objects.filter(
+            show=show, schedule__gte=now
+        ).order_by('schedule').first()
 
     return render(request, 'catalogue/show_index.html', {
         'page_obj': page_obj,

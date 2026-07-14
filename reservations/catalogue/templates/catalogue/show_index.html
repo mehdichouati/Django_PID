@@ -6,7 +6,6 @@
 <a href="{% url 'show_create' %}" class="btn btn-success mb-3">+ Nouveau spectacle</a>
 {% endif %}
 <a href="{% url 'show_export_csv' %}?q={{ query }}&bookable={{ bookable }}" class="btn btn-outline-secondary mb-3">⬇ Exporter en CSV</a>
-
 <form method="get" class="row g-2 mb-3">
     <div class="col-auto">
         <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Rechercher un titre...">
@@ -22,7 +21,6 @@
         <button type="submit" class="btn btn-primary">Filtrer</button>
     </div>
 </form>
-
 <table class="table table-striped">
     <thead>
         <tr>
@@ -32,6 +30,7 @@
                 </a>
             </th>
             <th>Lieu</th>
+            <th>Prochaine représentation</th>
             <th>
                 <a href="?q={{ query }}&bookable={{ bookable }}&sort={% if sort == 'created_in' %}-created_in{% else %}created_in{% endif %}">
                     Année {% if sort == 'created_in' %}▲{% elif sort == '-created_in' %}▼{% endif %}
@@ -46,6 +45,13 @@
         <tr>
             <td>{{ show.title }}</td>
             <td>{{ show.location.designation|default:"—" }}</td>
+            <td>
+                {% if show.next_representation %}
+                    {{ show.next_representation.schedule|date:"d/m/Y à H\hi" }}
+                {% else %}
+                    <span class="text-muted">Aucune date programmée</span>
+                {% endif %}
+            </td>
             <td>{{ show.created_in|default:"—" }}</td>
             <td>{% if show.bookable %}Oui{% else %}Non{% endif %}</td>
             <td>
@@ -53,11 +59,10 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="text-muted">Aucun spectacle trouvé.</td></tr>
+        <tr><td colspan="6" class="text-muted">Aucun spectacle trouvé.</td></tr>
         {% endfor %}
     </tbody>
 </table>
-
 <nav>
     <ul class="pagination">
         {% if page_obj.has_previous %}
