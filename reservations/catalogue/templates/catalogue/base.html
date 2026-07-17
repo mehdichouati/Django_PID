@@ -3,6 +3,13 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function () {
+            const saved = localStorage.getItem('theme');
+            const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <title>{% block title %}Projet Réservations{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,6 +23,7 @@
     <a class="nav-link text-white" href="{% url 'artist_index' %}">{{ t.nav_artistes }}</a>
     <a class="nav-link text-white" href="{% url 'external_venues' %}">{{ t.nav_lieux_culturels }}</a>
     <div class="ms-auto d-flex align-items-center gap-2">
+        <button id="theme-toggle" type="button" class="btn btn-outline-light btn-sm" title="Changer de thème" aria-label="Changer de thème clair/sombre">🌙</button>
         {% if user.is_authenticated %}
             <a href="{% url 'my_reservations' %}" class="btn btn-outline-light btn-sm">{{ t.nav_mes_reservations }}</a>
             <a href="{% url 'profile_edit' %}" class="text-white text-decoration-none">{{ t.nav_bonjour }} {{ user.first_name }}</a>
@@ -64,6 +72,28 @@
         document.getElementById('cookie-reject').addEventListener('click', function () {
             localStorage.setItem('cookie_consent', 'rejected');
             banner.classList.add('d-none');
+        });
+    })();
+</script>
+
+<!-- Bascule mode clair / mode sombre -->
+<script>
+    (function () {
+        const toggleBtn = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+
+        function updateIcon() {
+            toggleBtn.textContent = root.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+        }
+
+        updateIcon();
+
+        toggleBtn.addEventListener('click', function () {
+            const current = root.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateIcon();
         });
     })();
 </script>
