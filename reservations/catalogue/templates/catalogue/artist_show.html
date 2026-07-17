@@ -21,7 +21,7 @@
     {% endfor %}
 </ul>
 
-{% if is_admin %}
+{% if is_manager %}
 {% if available_types %}
 <h4>Ajouter un type existant</h4>
 <form method="post" action="{% url 'artist_add_type' artist.id %}" class="d-flex gap-2 mb-4" style="max-width: 400px;">
