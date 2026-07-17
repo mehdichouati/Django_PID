@@ -18,12 +18,24 @@ from .models import (
 from .forms import ArtistForm, RegisterForm, ShowForm, ReviewForm, ProfileForm
 
 
+def get_user_roles(user):
+    """Renvoie l'ensemble des noms de rôles de l'utilisateur connecté."""
+    if not user.is_authenticated:
+        return set()
+    if user.is_superuser:
+        return {'admin'}
+    return set(RoleUser.objects.filter(user=user).values_list('role__role', flat=True))
+
+
 def is_user_admin(user):
-    """Vérifie si l'utilisateur connecté a le rôle admin (ou est superuser)."""
-    return user.is_authenticated and (
-        user.is_superuser or
-        RoleUser.objects.filter(user=user, role__role='admin').exists()
-    )
+    """Rôle admin uniquement (actions destructives / sensibles)."""
+    return user.is_authenticated and (user.is_superuser or 'admin' in get_user_roles(user))
+
+
+def is_user_manager(user):
+    """Admin OU gestionnaire (gestion de contenu courante)."""
+    roles = get_user_roles(user)
+    return user.is_authenticated and (user.is_superuser or 'admin' in roles or 'gestionnaire' in roles)
 
 
 def artist_index(request):
@@ -31,6 +43,7 @@ def artist_index(request):
     return render(request, 'catalogue/artist_index.html', {
         'artists': artists,
         'is_admin': is_user_admin(request.user),
+        'is_manager': is_user_manager(request.user),
     })
 
 
@@ -43,16 +56,17 @@ def artist_show(request, id):
         'artist_types': artist_types,
         'available_types': available_types,
         'is_admin': is_user_admin(request.user),
+        'is_manager': is_user_manager(request.user),
     })
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def artist_create(request):
     form = ArtistForm()
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Nouvel artiste'})
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def artist_store(request):
     form = ArtistForm(request.POST)
     if form.is_valid():
@@ -61,14 +75,14 @@ def artist_store(request):
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Nouvel artiste'})
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def artist_edit(request, id):
     artist = get_object_or_404(Artist, id=id)
     form = ArtistForm(instance=artist)
     return render(request, 'catalogue/artist_form.html', {'form': form, 'title': 'Modifier l\'artiste'})
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def artist_update(request, id):
     artist = get_object_or_404(Artist, id=id)
     form = ArtistForm(request.POST, instance=artist)
@@ -85,7 +99,7 @@ def artist_delete(request, id):
     return redirect('artist_index')
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def artist_add_type(request, id):
     artist = get_object_or_404(Artist, id=id)
     if request.method == 'POST':
@@ -97,7 +111,7 @@ def artist_add_type(request, id):
     return redirect('artist_show', id=artist.id)
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def artist_create_type(request, id):
     artist = get_object_or_404(Artist, id=id)
     if request.method == 'POST':
@@ -165,6 +179,7 @@ def show_index(request):
         'bookable': bookable,
         'sort': sort,
         'is_admin': is_user_admin(request.user),
+        'is_manager': is_user_manager(request.user),
     })
 
 
@@ -340,10 +355,11 @@ def show_show(request, slug):
         'average_stars': average_stars,
         'review_form': ReviewForm(),
         'is_admin': is_user_admin(request.user),
+        'is_manager': is_user_manager(request.user),
     })
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def show_toggle_bookable(request, id):
     """Bascule le statut réservable d'un spectacle via AJAX (JSON), sans recharger la page."""
     if request.method != 'POST':
@@ -384,13 +400,13 @@ def review_store(request, id):
     return redirect('show_show', slug=show.slug)
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def show_create(request):
     form = ShowForm()
     return render(request, 'catalogue/show_form.html', {'form': form, 'title': 'Nouveau spectacle'})
 
 
-@role_required('admin')
+@role_required('admin', 'gestionnaire')
 def show_store(request):
     form = ShowForm(request.POST)
     if form.is_valid():
