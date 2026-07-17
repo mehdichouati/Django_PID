@@ -326,8 +326,8 @@ def sync_locations_from_opendata(request):
     return redirect('external_venues')
 
 
-def show_show(request, id):
-    show = get_object_or_404(Show, id=id)
+def show_show(request, slug):
+    show = get_object_or_404(Show, slug=slug)
     artist_types = ArtisteTypeShow.objects.filter(show=show).select_related('artiste_type__artist', 'artiste_type__type')
     representations = Representation.objects.filter(show=show)
     reviews = Review.objects.filter(show=show, validated=True).order_by('-created_at')
@@ -381,7 +381,7 @@ def review_store(request, id):
             messages.success(request, "Votre avis a été soumis et sera visible après validation.")
         else:
             messages.error(request, "Merci de corriger les erreurs du formulaire.")
-    return redirect('show_show', id=show.id)
+    return redirect('show_show', slug=show.slug)
 
 
 @role_required('admin')

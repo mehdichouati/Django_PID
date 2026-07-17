@@ -12,5 +12,5 @@ urlpatterns = [
     path('external/venues/sync', views.sync_locations_from_opendata, name='sync_locations'),
     path('<int:id>/toggle-bookable', views.show_toggle_bookable, name='show_toggle_bookable'),
     path('<int:id>/review', views.review_store, name='review_store'),
-    path('<int:id>', views.show_show, name='show_show'),
+    path('<slug:slug>', views.show_show, name='show_show'),
 ]

@@ -24,4 +24,4 @@ class UpcomingRepresentationsFeed(Feed):
         return f"Représentation de « {item.show.title} » le {item.schedule.strftime('%d/%m/%Y à %H:%M')} à {location_name}."
 
     def item_link(self, item):
-        return reverse('show_show', args=[item.show.id])
+        return reverse('show_show', args=[item.show.slug])

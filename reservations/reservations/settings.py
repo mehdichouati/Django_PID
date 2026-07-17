@@ -24,9 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e970+i4xq8ho$5&%5=v@wz&=v9^ys^&)s^ch*-s#j_*z8kl^7i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG désactivé automatiquement sur PythonAnywhere (production), actif en local (développement)
+DEBUG = not os.environ.get('PYTHONANYWHERE_DOMAIN')
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'idem1030.pythonanywhere.com']
+
+# Sécurité des cookies : forcés en HTTPS uniquement en production (PythonAnywhere fournit un certificat automatique)
+if os.environ.get('PYTHONANYWHERE_DOMAIN'):
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
 
 # Application definition
