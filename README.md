@@ -1,6 +1,6 @@
 # Projet Réservations — Plateforme de gestion de spectacles
 
-Projet réalisé dans le cadre du cours **PID (Projet d'Intégration de Développement)** — EPFC.
+Projet réalisé dans le cadre du cours **PID (Projet d'Intégration de Développement)** ICC.
 
 Application web permettant à une société de production de gérer son catalogue de spectacles, ses artistes, ses représentations, et à ses membres de réserver des places en ligne.
 
